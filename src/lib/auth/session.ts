@@ -10,7 +10,7 @@ export const sessionOptions: SessionOptions = {
   cookieName: 'obtt_session',
   password: config.sessionSecret,
   cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: config.webBaseUrl.startsWith('https://'),
     httpOnly: true,
     sameSite: 'lax'
   }
