@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:bot.rustplus.io)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(npm view @liamcottle/rustplus.js dependencies)",
+      "PowerShell(npm view @liamcottle/push-receiver@0.0.4 dependencies description)",
+      "PowerShell(npm view better-sqlite3 version)",
+      "PowerShell(npm view better-sqlite3@12 engines)",
+      "PowerShell(npm install better-sqlite3@^12.11.1)",
+      "PowerShell($r1 = Invoke-WebRequest -Uri http://localhost:3000/ -MaximumRedirection 0 -SkipHttpErrorCheck -UseBasicParsing; \"root: $\\($r1.StatusCode\\) -> $\\($r1.Headers.Location\\)\"; $r2 = Invoke-WebRequest -Uri http://localhost:3000/login -UseBasicParsing; \"login: $\\($r2.StatusCode\\)\"; $r3 = Invoke-WebRequest -Uri http://localhost:3000/api/me -SkipHttpErrorCheck -UseBasicParsing; \"api/me: $\\($r3.StatusCode\\) $\\($r3.Content\\)\"; $r4 = Invoke-WebRequest -Uri http://localhost:3000/api/auth/steam -MaximumRedirection 0 -SkipHttpErrorCheck -UseBasicParsing; \"auth/steam: $\\($r4.StatusCode\\) -> $\\($r4.Headers.Location\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code} -> %{redirect_url}' http://localhost:3000/)",
+      "Bash(echo \"root: $\\(curl -s -o /dev/null -w '%{http_code} -> %{redirect_url}' http://localhost:3000/\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login)",
+      "Bash(echo \"login: $\\(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login\\)\")",
+      "Bash(curl -s -w ' [%{http_code}]' http://localhost:3000/api/me)"
+    ]
+  }
+}

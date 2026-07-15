@@ -1,0 +1,34 @@
+{
+  "name": "obtt",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OBTT - Rust+ 연동 디스코드 봇 + 웹 대시보드 (단일 Next.js 앱)",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false server.ts",
+    "build": "next build",
+    "start": "cross-env NODE_ENV=production tsx server.ts",
+    "register-commands": "tsx scripts/register-commands.ts"
+  },
+  "dependencies": {
+    "@liamcottle/push-receiver": "^0.0.4",
+    "@liamcottle/rustplus.js": "^2.5.0",
+    "better-sqlite3": "^12.11.1",
+    "cross-env": "^7.0.3",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.7",
+    "iron-session": "^8.0.4",
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2"
+  }
+}
