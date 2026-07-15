@@ -23,7 +23,10 @@ npm start                  # 웹 + API + 봇 전부 기동
 ## 사용 흐름
 
 1. 디스코드에서 `/setup` — 알림/팀챗/기기 채널 자동 생성
-2. `/credentials set` — [크리덴셜 앱](https://github.com/liamcottle/rustplus.js#pairing)으로 얻은 FCM 크리덴셜 JSON 등록
+2. `/credentials set` — [rustplusplus 크리덴셜 앱](https://github.com/alexemanuelol/rustplusplus-credential-application) 또는 [rustplusplus-credentials.netlify.app](https://rustplusplus-credentials.netlify.app/)에서 발급받은 크리덴셜 등록. 아래 두 형식 모두 입력 가능:
+   - `gcm_android_id:... gcm_security_token:... steam_id:... issued_date:... expire_date:...` (공백 구분)
+   - `{ "gcm": { "android_id": "...", "security_token": "..." } }` (JSON)
+   - 크리덴셜은 발급 후 약 2주간 유효하며, 만료되면 디스코드 DM으로 재등록 안내를 받습니다.
 3. 인게임 Rust+ 메뉴에서 서버/스마트 기기 **페어링** → 자동 등록 (여러 서버 동시 지원)
 4. 웹 대시보드: `WEB_BASE_URL` 접속 → Steam 로그인 → 서버 모니터링/스위치 제어
 5. 디스코드 `/link` 로 발급받은 코드를 대시보드에 입력하면 계정 연동

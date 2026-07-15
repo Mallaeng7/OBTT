@@ -17,6 +17,7 @@ import {
 import { config } from '../config';
 import { t } from '../i18n';
 import { handleChatCommand } from '../core/commands';
+import { parseCredentialsInput } from '../core/credentials';
 import type { Repositories, RustServerRow, DeviceRow, GuildRow } from '../db/repositories';
 import type { RustPlusManager } from '../core/rustplusManager';
 import type { FcmListener } from '../core/fcmListener';
@@ -172,6 +173,13 @@ export class DiscordBot {
           });
       })().catch((e) => console.error('[discord] onAlarmPush', e));
     };
+
+    this.fcm.hooks.onCredentialsExpired = (discordUserId, guildId) => {
+      void (async () => {
+        const user = await this.client.users.fetch(discordUserId).catch(() => null);
+        if (user) await user.send(t('slash.credentials.expired', {}, this.lang(guildId))).catch(() => {});
+      })().catch((e) => console.error('[discord] onCredentialsExpired', e));
+    };
   }
 
   // ── 스위치 제어 Embed ────────────────────────────────────────
@@ -284,14 +292,15 @@ export class DiscordBot {
     if (interaction.customId !== 'credentials-modal' || !interaction.guildId) return;
     const raw = interaction.fields.getTextInputValue('credentials-json');
     const lang = this.lang(interaction.guildId);
+    let parsed;
     try {
-      JSON.parse(raw);
-    } catch {
-      await interaction.reply({ content: t('slash.credentials.invalid', {}, lang), ephemeral: true });
+      parsed = parseCredentialsInput(raw);
+    } catch (err) {
+      await interaction.reply({ content: `${t('slash.credentials.invalid', {}, lang)} (${(err as Error).message})`, ephemeral: true });
       return;
     }
     this.guildRow(interaction.guildId);
-    this.repos.setCredentials(interaction.user.id, interaction.guildId, raw);
+    this.repos.setCredentials(interaction.user.id, interaction.guildId, JSON.stringify(parsed));
     await this.fcm.start(interaction.user.id);
     await interaction.reply({ content: t('slash.credentials.saved', {}, lang), ephemeral: true });
   }
@@ -326,7 +335,8 @@ export class DiscordBot {
           const modal = new ModalBuilder().setCustomId('credentials-modal').setTitle('Rust+ 크리덴셜 등록');
           const input = new TextInputBuilder()
             .setCustomId('credentials-json')
-            .setLabel('크리덴셜 JSON 붙여넣기')
+            .setLabel('크리덴셜 (gcm_android_id:... 형식 또는 JSON)')
+            .setPlaceholder('gcm_android_id:... gcm_security_token:... steam_id:... issued_date:... expire_date:...')
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true);
           modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
