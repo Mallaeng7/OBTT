@@ -121,7 +121,7 @@ class Session {
   private req(fn: (cb: (msg: any) => void) => void): Promise<any> {
     return new Promise((resolve, reject) => {
       if (!this.rp) return reject(new Error('not connected'));
-      const timeout = setTimeout(() => reject(new Error('rust+ request timeout')), 10_000);
+      const timeout = setTimeout(() => reject(new Error('rust+ request timeout')), 20_000);
       try {
         fn((msg: any) => {
           clearTimeout(timeout);
@@ -164,12 +164,17 @@ class Session {
 
   private async poll(): Promise<void> {
     try {
-      const [info, time, team, markers] = await Promise.all([
+      const results = await Promise.allSettled([
         this.getInfo(),
         this.getTime(),
         this.getTeamInfo(),
         this.getMapMarkers()
       ]);
+
+      const info = results[0].status === 'fulfilled' ? results[0].value : null;
+      const time = results[1].status === 'fulfilled' ? results[1].value : null;
+      const team = results[2].status === 'fulfilled' ? results[2].value : null;
+      const markers = results[3].status === 'fulfilled' ? results[3].value : null;
 
       const mapSize = info?.info?.mapSize ?? this.manager.state.get(this.row.id).info?.mapSize ?? 0;
 
@@ -202,7 +207,7 @@ class Session {
       this.diffMarkers((markers?.mapMarkers?.markers ?? []) as MapMarker[], mapSize);
     } catch (err) {
       // 폴링 실패는 일시적일 수 있으므로 로그만 남긴다. 연결 자체가 끊기면 disconnected 이벤트가 처리.
-      console.error(`[rust+ ${this.row.title}] poll error:`, (err as Error).message);
+      console.warn(`[rust+ ${this.row.title}] poll error:`, (err as Error).message);
     }
   }
 
