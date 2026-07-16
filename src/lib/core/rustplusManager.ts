@@ -176,35 +176,50 @@ class Session {
       const team = results[2].status === 'fulfilled' ? results[2].value : null;
       const markers = results[3].status === 'fulfilled' ? results[3].value : null;
 
+      console.log(`[rust+ ${this.row.title}] poll info:`, results[0].status === 'fulfilled' ? 'OK' : results[0].reason);
+
       const mapSize = info?.info?.mapSize ?? this.manager.state.get(this.row.id).info?.mapSize ?? 0;
 
-      const members: TeamMember[] = (team?.teamInfo?.members ?? []).map((m: any) => ({
-        steamId: String(m.steamId),
-        name: m.name,
-        isOnline: !!m.isOnline,
-        isAlive: !!m.isAlive,
-        x: m.x,
-        y: m.y,
-        grid: toGrid(m.x, m.y, mapSize)
-      }));
+      const partial: Partial<ServerLiveState> = {};
 
-      this.manager.state.patch(this.row.id, {
-        info: info?.info
-          ? {
-              name: info.info.name,
-              players: info.info.players,
-              maxPlayers: info.info.maxPlayers,
-              queuedPlayers: info.info.queuedPlayers,
-              seed: info.info.seed,
-              mapSize: info.info.mapSize,
-              wipeTime: info.info.wipeTime
-            }
-          : undefined,
-        time: time?.time ? { time: time.time.time, sunrise: time.time.sunrise, sunset: time.time.sunset } : undefined,
-        team: members
-      });
+      if (info?.info) {
+        partial.info = {
+          name: info.info.name || '',
+          players: info.info.players || 0,
+          maxPlayers: info.info.maxPlayers || 0,
+          queuedPlayers: info.info.queuedPlayers || 0,
+          seed: info.info.seed || 0,
+          mapSize: info.info.mapSize || 0,
+          wipeTime: info.info.wipeTime || 0
+        };
+      }
 
-      this.diffMarkers((markers?.mapMarkers?.markers ?? []) as MapMarker[], mapSize);
+      if (time?.time) {
+        partial.time = { 
+          time: time.time.time || 0, 
+          sunrise: time.time.sunrise || 0, 
+          sunset: time.time.sunset || 0 
+        };
+      }
+
+      if (team?.teamInfo) {
+        const currentMapSize = partial.info?.mapSize || this.manager.state.get(this.row.id).info?.mapSize || 0;
+        partial.team = (team.teamInfo.members || []).map((m: any) => ({
+          steamId: String(m.steamId),
+          name: m.name || 'Unknown',
+          isOnline: !!m.isOnline,
+          isAlive: !!m.isAlive,
+          x: m.x || 0,
+          y: m.y || 0,
+          grid: toGrid(m.x || 0, m.y || 0, currentMapSize)
+        }));
+      }
+
+      if (Object.keys(partial).length > 0) {
+        this.manager.state.patch(this.row.id, partial);
+      }
+
+      this.diffMarkers((markers?.mapMarkers?.markers ?? []) as MapMarker[], partial.info?.mapSize || this.manager.state.get(this.row.id).info?.mapSize || 0);
     } catch (err) {
       // 폴링 실패는 일시적일 수 있으므로 로그만 남긴다. 연결 자체가 끊기면 disconnected 이벤트가 처리.
       console.warn(`[rust+ ${this.row.title}] poll error:`, (err as Error).message);
