@@ -4,11 +4,16 @@ import { parse } from 'url';
 import next from 'next';
 import { initRuntime, shutdownRuntime } from './src/lib/runtime-init';
 import { attachSocket } from './src/lib/web/socket';
+import { fixRustplusProto } from './src/lib/core/fixRustplusProto';
 
 const dev = process.env.NODE_ENV !== 'production';
 const port = parseInt(process.env.PORT || '3000', 10);
 
 async function main() {
+  // 0) rustplus.js의 required 필드 protobuf 스키마를 optional로 자가 치유
+  //    (postinstall patch-package가 스킵/실패해도 항상 적용되도록 부팅 시점에 재확인)
+  fixRustplusProto();
+
   // 1) Next.js 준비 (프론트 + API)
   const app = next({ dev });
   await app.prepare();
