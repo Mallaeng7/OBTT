@@ -59,14 +59,14 @@ interface EventEntry {
 }
 
 const EVENT_LABEL: Record<string, string> = {
-  cargo_spawn: '🚢 카고쉽 출현',
-  cargo_leave: '🚢 카고쉽 퇴장',
-  heli_spawn: '🚁 순찰 헬기 출현',
-  heli_leave: '🚁 순찰 헬기 퇴장',
-  ch47: '🛩️ CH47 출현',
-  crate_drop: '📦 잠긴 상자 드롭',
-  crate_gone: '📦 잠긴 상자 소멸',
-  explosion: '💥 폭발 감지'
+  cargo_spawn: '카고쉽 출현',
+  cargo_leave: '카고쉽 퇴장',
+  heli_spawn: '순찰 헬기 출현',
+  heli_leave: '순찰 헬기 퇴장',
+  ch47: 'CH47 출현',
+  crate_drop: '잠긴 상자 드롭',
+  crate_gone: '잠긴 상자 소멸',
+  explosion: '폭발 감지'
 };
 
 function gameClock(time?: { time: number }): string {
@@ -97,6 +97,7 @@ export default function Dashboard() {
   const [live, setLive] = useState<Record<number, LiveState>>({});
   const [devices, setDevices] = useState<Device[]>([]);
   const [events, setEvents] = useState<EventEntry[]>([]);
+  const [eventsEnabled, setEventsEnabled] = useState(true);
   const [linkCode, setLinkCode] = useState('');
   const [notice, setNotice] = useState('');
   const socketRef = useRef<Socket | null>(null);
@@ -111,6 +112,7 @@ export default function Dashboard() {
     setEvents(
       (data.recentEvents ?? []).map((e: any) => ({ type: e.event_type, at: e.occurred_at }))
     );
+    setEventsEnabled(data.server?.eventsEnabled ?? true);
     setLive((prev) => ({ ...prev, [serverId]: data.state }));
   }, []);
 
@@ -185,6 +187,22 @@ export default function Dashboard() {
     else if (!res.ok) setNotice('서버가 오프라인이거나 Rust+ 연결이 끊어졌습니다.');
     else setNotice('');
     // 실제 상태 반영은 socket 'device:state' 이벤트로 수신
+  };
+
+  const toggleEventsEnabled = async () => {
+    if (!selected) return;
+    const next = !eventsEnabled;
+    const res = await fetch(`/api/servers/${selected}/events`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: next })
+    });
+    if (!res.ok) {
+      setNotice('이벤트 알림 설정을 변경할 권한이 없습니다 (admin 필요).');
+      return;
+    }
+    setEventsEnabled(next);
+    setNotice('');
   };
 
   const submitLink = async () => {
@@ -361,7 +379,7 @@ export default function Dashboard() {
                       <tr key={m.steamId}>
                         <td>{m.isOnline ? '🟢 온라인' : '⚫ 오프라인'}</td>
                         <td>{m.name}</td>
-                        <td>{m.isOnline ? m.grid : '-'}</td>
+                        <td>{m.grid}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -370,7 +388,14 @@ export default function Dashboard() {
             </section>
 
             <section className="section">
-              <h2>이벤트 타임라인</h2>
+              <div className="section-header">
+                <h2>이벤트 타임라인</h2>
+                {me?.role === 'admin' && (
+                  <button className={`toggle ${eventsEnabled ? 'on' : 'off'}`} onClick={() => void toggleEventsEnabled()}>
+                    알림 {eventsEnabled ? '켜짐' : '꺼짐'}
+                  </button>
+                )}
+              </div>
               {events.length === 0 ? (
                 <div className="empty">아직 기록된 이벤트가 없습니다.</div>
               ) : (

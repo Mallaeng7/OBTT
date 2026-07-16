@@ -30,6 +30,7 @@ export interface RustServerRow {
   player_id: string;
   player_token: string;
   is_active: number;
+  events_enabled: number;
 }
 
 export type DeviceType = 'switch' | 'alarm' | 'storage_monitor';
@@ -125,7 +126,7 @@ export class Repositories {
   }
 
   // ── rust servers ───────────────────────────────────
-  upsertServer(row: Omit<RustServerRow, 'id' | 'is_active'>): RustServerRow {
+  upsertServer(row: Omit<RustServerRow, 'id' | 'is_active' | 'events_enabled'>): RustServerRow {
     const existing = this.db
       .prepare('SELECT * FROM rust_servers WHERE guild_id = ? AND ip = ? AND port = ?')
       .get(row.guild_id, row.ip, row.port) as RustServerRow | undefined;
@@ -174,6 +175,10 @@ export class Repositories {
 
   deleteServer(id: number): void {
     this.db.prepare('DELETE FROM rust_servers WHERE id = ?').run(id);
+  }
+
+  setEventsEnabled(id: number, enabled: boolean): void {
+    this.db.prepare('UPDATE rust_servers SET events_enabled = ? WHERE id = ?').run(enabled ? 1 : 0, id);
   }
 
   // ── devices ────────────────────────────────────────

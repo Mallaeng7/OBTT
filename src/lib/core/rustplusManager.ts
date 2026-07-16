@@ -46,6 +46,7 @@ class Session {
   private reconnectTimer: NodeJS.Timeout | null = null;
   private backoff = RECONNECT_BASE_MS;
   private stopped = false;
+  private infoOkLogged = false;
 
   constructor(
     public row: RustServerRow,
@@ -85,6 +86,7 @@ class Session {
       clearInterval(this.pollTimer);
       this.pollTimer = null;
     }
+    this.infoOkLogged = false;
     const wasOnline = this.manager.state.get(this.row.id).status === 'online';
     this.manager.state.patch(this.row.id, { status: 'offline' });
     if (wasOnline) this.manager.hooks.onStatus?.(this.row, 'offline');
@@ -176,7 +178,14 @@ class Session {
       const team = results[2].status === 'fulfilled' ? results[2].value : null;
       const markers = results[3].status === 'fulfilled' ? results[3].value : null;
 
-      console.log(`[rust+ ${this.row.title}] poll info:`, results[0].status === 'fulfilled' ? 'OK' : results[0].reason);
+      if (results[0].status === 'fulfilled') {
+        if (!this.infoOkLogged) {
+          console.log(`[rust+ ${this.row.title}] poll info: OK`);
+          this.infoOkLogged = true;
+        }
+      } else {
+        console.warn(`[rust+ ${this.row.title}] poll info error:`, (results[0].reason as Error)?.message ?? results[0].reason);
+      }
 
       const partial: Partial<ServerLiveState> = {};
 
@@ -302,6 +311,9 @@ export class RustPlusManager {
 
   recordEvent(row: RustServerRow, type: string, message: string): void {
     this.repos.logEvent(row.id, type);
+    // 토글은 실시간으로 DB에 반영되므로 세션 생성 시점의 stale row 대신 최신 값을 다시 조회한다.
+    const fresh = this.repos.getServer(row.id);
+    if (!fresh?.events_enabled) return;
     this.state.publishEvent({ serverId: row.id, type, message, at: new Date().toISOString() });
     this.hooks.onEvent?.(row, type, message);
   }

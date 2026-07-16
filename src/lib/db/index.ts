@@ -87,5 +87,11 @@ export function openDatabase(): Database.Database {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(MIGRATIONS);
+
+  const serverCols = db.prepare('PRAGMA table_info(rust_servers)').all() as { name: string }[];
+  if (!serverCols.some((c) => c.name === 'events_enabled')) {
+    db.exec('ALTER TABLE rust_servers ADD COLUMN events_enabled INTEGER NOT NULL DEFAULT 1');
+  }
+
   return db;
 }
