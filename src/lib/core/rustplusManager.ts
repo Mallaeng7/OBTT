@@ -311,10 +311,12 @@ export class RustPlusManager {
 
   recordEvent(row: RustServerRow, type: string, message: string): void {
     this.repos.logEvent(row.id, type);
-    // 토글은 실시간으로 DB에 반영되므로 세션 생성 시점의 stale row 대신 최신 값을 다시 조회한다.
+    // 대시보드 이벤트 타임라인은 알림 on/off와 무관하게 항상 갱신한다.
+    this.state.publishEvent({ serverId: row.id, type, message, at: new Date().toISOString() });
+    // 디스코드 채널 알림 + 인게임 팀챗 전송만 토글로 제어. 토글은 실시간으로 DB에 반영되므로
+    // 세션 생성 시점의 stale row 대신 최신 값을 다시 조회한다.
     const fresh = this.repos.getServer(row.id);
     if (!fresh?.events_enabled) return;
-    this.state.publishEvent({ serverId: row.id, type, message, at: new Date().toISOString() });
     this.hooks.onEvent?.(row, type, message);
   }
 
