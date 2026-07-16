@@ -3,7 +3,7 @@ import { config } from '../config';
 import { t } from '../i18n';
 import { toGrid } from './grid';
 import type { Repositories, RustServerRow } from '../db/repositories';
-import type { StateStore, TeamMember } from './stateStore';
+import type { StateStore, ServerLiveState } from './stateStore';
 
 /** AppMarkerType (Rust+ 프로토콜) */
 const MARKER = {
@@ -177,8 +177,6 @@ class Session {
       const markers = results[3].status === 'fulfilled' ? results[3].value : null;
 
       console.log(`[rust+ ${this.row.title}] poll info:`, results[0].status === 'fulfilled' ? 'OK' : results[0].reason);
-
-      const mapSize = info?.info?.mapSize ?? this.manager.state.get(this.row.id).info?.mapSize ?? 0;
 
       const partial: Partial<ServerLiveState> = {};
 
