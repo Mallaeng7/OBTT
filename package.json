@@ -7,7 +7,8 @@
     "dev": "tsx watch --clear-screen=false server.ts",
     "build": "next build",
     "start": "cross-env NODE_ENV=production tsx server.ts",
-    "register-commands": "tsx scripts/register-commands.ts"
+    "register-commands": "tsx scripts/register-commands.ts",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@liamcottle/push-receiver": "^0.0.4",
@@ -29,6 +30,7 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2"
+    "@types/react-dom": "^19.0.2",
+    "patch-package": "^8.0.1"
   }
 }

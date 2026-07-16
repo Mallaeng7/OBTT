@@ -1,0 +1,13 @@
+diff --git a/node_modules/@liamcottle/rustplus.js/rustplus.proto b/node_modules/@liamcottle/rustplus.js/rustplus.proto
+index d893865..8c00735 100644
+--- a/node_modules/@liamcottle/rustplus.js/rustplus.proto
++++ b/node_modules/@liamcottle/rustplus.js/rustplus.proto
+@@ -229,7 +229,7 @@ message AppInfo {
+ 	required uint32 wipeTime = 6;
+ 	required uint32 players = 7;
+ 	required uint32 maxPlayers = 8;
+-	required uint32 queuedPlayers = 9;
++	optional uint32 queuedPlayers = 9;
+ 	optional uint32 seed = 10;
+ 	optional uint32 salt = 11;
+ 	optional string logoImage = 12;
