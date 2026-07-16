@@ -361,54 +361,56 @@ export default function Dashboard() {
               </section>
             )}
 
-            <section className="section">
-              <h2>팀원</h2>
-              {(state.team?.length ?? 0) === 0 ? (
-                <div className="empty">팀 정보가 없습니다.</div>
-              ) : (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>상태</th>
-                      <th>이름</th>
-                      <th>위치</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {state.team!.map((m) => (
-                      <tr key={m.steamId}>
-                        <td>{m.isOnline ? '🟢 온라인' : '⚫ 오프라인'}</td>
-                        <td>{m.name}</td>
-                        <td>{m.grid}</td>
+            <div className="row-2col">
+              <section className="section">
+                <h2>팀원</h2>
+                {(state.team?.length ?? 0) === 0 ? (
+                  <div className="empty">팀 정보가 없습니다.</div>
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>상태</th>
+                        <th>이름</th>
+                        <th>위치</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </section>
-
-            <section className="section">
-              <div className="section-header">
-                <h2>이벤트 타임라인</h2>
-                {me?.role === 'admin' && (
-                  <button className={`toggle ${eventsEnabled ? 'on' : 'off'}`} onClick={() => void toggleEventsEnabled()}>
-                    알림 {eventsEnabled ? '켜짐' : '꺼짐'}
-                  </button>
+                    </thead>
+                    <tbody>
+                      {state.team!.map((m) => (
+                        <tr key={m.steamId}>
+                          <td>{m.isOnline ? '🟢 온라인' : '⚫ 오프라인'}</td>
+                          <td>{m.name}</td>
+                          <td>{m.grid}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 )}
-              </div>
-              {events.length === 0 ? (
-                <div className="empty">아직 기록된 이벤트가 없습니다.</div>
-              ) : (
-                <div className="event-list">
-                  {events.map((e, idx) => (
-                    <div key={idx} className="event-item">
-                      <span>{e.message ?? EVENT_LABEL[e.type] ?? e.type}</span>
-                      <span className="time">{timeAgo(e.at)}</span>
-                    </div>
-                  ))}
+              </section>
+
+              <section className="section">
+                <div className="section-header">
+                  <h2>이벤트 타임라인</h2>
+                  {me?.role === 'admin' && (
+                    <button className={`toggle ${eventsEnabled ? 'on' : 'off'}`} onClick={() => void toggleEventsEnabled()}>
+                      알림 {eventsEnabled ? '켜짐' : '꺼짐'}
+                    </button>
+                  )}
                 </div>
-              )}
-            </section>
+                {events.length === 0 ? (
+                  <div className="empty">아직 기록된 이벤트가 없습니다.</div>
+                ) : (
+                  <div className="event-list">
+                    {events.map((e, idx) => (
+                      <div key={idx} className="event-item">
+                        <span>{e.message ?? EVENT_LABEL[e.type] ?? e.type}</span>
+                        <span className="time">{timeAgo(e.at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
           </>
         )}
       </main>
