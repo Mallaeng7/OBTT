@@ -1,6 +1,6 @@
 @echo off
-set msg=%*
-if "%msg%"=="" set msg="Update"
+set "msg=%~1"
+if "%msg%"=="" set "msg=Update"
 git add .
 git commit -m "%msg%"
 git push
