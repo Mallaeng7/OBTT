@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { io, type Socket } from 'socket.io-client';
 
 interface Me {
@@ -100,13 +101,13 @@ export default function Dashboard() {
   const [eventsEnabled, setEventsEnabled] = useState(true);
   const [linkCode, setLinkCode] = useState('');
   const [notice, setNotice] = useState('');
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<{ id: number; top: number; left: number } | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const selectedRef = useRef<number | null>(null);
   selectedRef.current = selected;
 
   useEffect(() => {
-    const close = () => setOpenMenuId(null);
+    const close = () => setOpenMenu(null);
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, []);
@@ -305,24 +306,35 @@ export default function Dashboard() {
                     className="server-menu-trigger"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setOpenMenuId(openMenuId === s.id ? null : s.id);
+                      if (openMenu?.id === s.id) {
+                        setOpenMenu(null);
+                        return;
+                      }
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setOpenMenu({ id: s.id, top: rect.bottom + 4, left: rect.right - 120 });
                     }}
                   >
                     ⋮
                   </button>
-                  {openMenuId === s.id && (
-                    <div className="server-menu-panel">
-                      {status === 'offline' ? (
-                        <button className="server-menu-item" onClick={() => void setConnection(s.id, true)}>
-                          연결하기
-                        </button>
-                      ) : (
-                        <button className="server-menu-item danger" onClick={() => void setConnection(s.id, false)}>
-                          연결 끊기
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {openMenu?.id === s.id &&
+                    createPortal(
+                      <div
+                        className="server-menu-panel"
+                        style={{ position: 'fixed', top: openMenu.top, left: openMenu.left }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {status === 'offline' ? (
+                          <button className="server-menu-item" onClick={() => void setConnection(s.id, true)}>
+                            연결하기
+                          </button>
+                        ) : (
+                          <button className="server-menu-item danger" onClick={() => void setConnection(s.id, false)}>
+                            연결 끊기
+                          </button>
+                        )}
+                      </div>,
+                      document.body
+                    )}
                 </div>
               )}
             </div>
