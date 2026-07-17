@@ -107,7 +107,11 @@ export default function Dashboard() {
   selectedRef.current = selected;
 
   useEffect(() => {
-    const close = () => setOpenMenu(null);
+    const close = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('.server-menu-trigger') || target.closest('.server-menu-panel')) return;
+      setOpenMenu(null);
+    };
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, []);
