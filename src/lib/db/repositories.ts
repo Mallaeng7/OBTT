@@ -293,9 +293,10 @@ export class Repositories {
   }
 
   recentEvents(serverId: number, limit = 30): EventLogRow[] {
+    const cutoff = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
     return this.db
-      .prepare('SELECT * FROM event_log WHERE server_id = ? ORDER BY id DESC LIMIT ?')
-      .all(serverId, limit) as EventLogRow[];
+      .prepare('SELECT * FROM event_log WHERE server_id = ? AND occurred_at >= ? ORDER BY id DESC LIMIT ?')
+      .all(serverId, cutoff, limit) as EventLogRow[];
   }
 
   // ── link codes ─────────────────────────────────────
