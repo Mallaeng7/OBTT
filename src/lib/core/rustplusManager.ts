@@ -321,7 +321,9 @@ export class RustPlusManager {
   }
 
   startAll(): void {
-    for (const row of this.repos.listServers()) this.connectServer(row.id);
+    for (const row of this.repos.listServers()) {
+      if (row.auto_connect) this.connectServer(row.id);
+    }
   }
 
   connectServer(serverId: number): void {
@@ -336,6 +338,18 @@ export class RustPlusManager {
   disconnectServer(serverId: number): void {
     this.sessions.get(serverId)?.disconnect();
     this.sessions.delete(serverId);
+  }
+
+  /** 대시보드에서 수동으로 다시 연결 — auto_connect를 켜서 재부팅 후에도 유지 */
+  connectServerManual(serverId: number): void {
+    this.repos.setAutoConnect(serverId, true);
+    this.connectServer(serverId);
+  }
+
+  /** 대시보드에서 수동으로 연결 끊기 — auto_connect를 꺼서 재부팅해도 다시 붙지 않음 */
+  disconnectServerManual(serverId: number): void {
+    this.repos.setAutoConnect(serverId, false);
+    this.disconnectServer(serverId);
   }
 
   removeServer(serverId: number): void {

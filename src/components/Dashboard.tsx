@@ -100,9 +100,16 @@ export default function Dashboard() {
   const [eventsEnabled, setEventsEnabled] = useState(true);
   const [linkCode, setLinkCode] = useState('');
   const [notice, setNotice] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const selectedRef = useRef<number | null>(null);
   selectedRef.current = selected;
+
+  useEffect(() => {
+    const close = () => setOpenMenuId(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, []);
 
   const loadServerDetail = useCallback(async (serverId: number) => {
     const res = await fetch(`/api/servers/${serverId}/state`);
@@ -189,6 +196,17 @@ export default function Dashboard() {
     // 실제 상태 반영은 socket 'device:state' 이벤트로 수신
   };
 
+  const setConnection = async (serverId: number, connected: boolean) => {
+    const res = await fetch(`/api/servers/${serverId}/connection`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ connected })
+    });
+    if (!res.ok) setNotice('연결 상태를 변경할 권한이 없습니다 (admin 필요).');
+    else setNotice('');
+    // 실제 상태는 socket 'server:update' 이벤트로 반영됨
+  };
+
   const toggleEventsEnabled = async () => {
     if (!selected) return;
     const next = !eventsEnabled;
@@ -272,13 +290,44 @@ export default function Dashboard() {
             디스코드에서 /credentials 등록 후 인게임 Rust+ 메뉴에서 서버를 페어링하세요.
           </div>
         )}
-        {servers.map((s) => (
-          <button key={s.id} className={`server-item ${selected === s.id ? 'selected' : ''}`} onClick={() => select(s.id)}>
-            <span className={`dot ${live[s.id]?.status ?? s.status}`} />
-            <span className="name">{s.title}</span>
-            {s.isActive && <span title="디스코드 명령어 대상">⭐</span>}
-          </button>
-        ))}
+        {servers.map((s) => {
+          const status = live[s.id]?.status ?? s.status;
+          return (
+            <div key={s.id} className="server-item-row">
+              <button className={`server-item ${selected === s.id ? 'selected' : ''}`} onClick={() => select(s.id)}>
+                <span className={`dot ${status}`} />
+                <span className="name">{s.title}</span>
+                {s.isActive && <span title="디스코드 명령어 대상">⭐</span>}
+              </button>
+              {me?.role === 'admin' && (
+                <div className="server-menu">
+                  <button
+                    className="server-menu-trigger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(openMenuId === s.id ? null : s.id);
+                    }}
+                  >
+                    ⋮
+                  </button>
+                  {openMenuId === s.id && (
+                    <div className="server-menu-panel">
+                      {status === 'offline' ? (
+                        <button className="server-menu-item" onClick={() => void setConnection(s.id, true)}>
+                          연결하기
+                        </button>
+                      ) : (
+                        <button className="server-menu-item" onClick={() => void setConnection(s.id, false)}>
+                          연결 끊기
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </aside>
 
       <main className="dash-main">

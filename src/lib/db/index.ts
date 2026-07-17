@@ -92,6 +92,9 @@ export function openDatabase(): Database.Database {
   if (!serverCols.some((c) => c.name === 'events_enabled')) {
     db.exec('ALTER TABLE rust_servers ADD COLUMN events_enabled INTEGER NOT NULL DEFAULT 1');
   }
+  if (!serverCols.some((c) => c.name === 'auto_connect')) {
+    db.exec('ALTER TABLE rust_servers ADD COLUMN auto_connect INTEGER NOT NULL DEFAULT 1');
+  }
 
   return db;
 }

@@ -128,7 +128,7 @@ export class FcmListener {
           player_id: String(body.playerId),
           player_token: String(body.playerToken)
         });
-        this.manager.connectServer(server.id);
+        this.manager.connectServerManual(server.id);
         this.hooks.onServerPaired?.(server);
       } else if (body.type === 'entity') {
         const server = this.repos
