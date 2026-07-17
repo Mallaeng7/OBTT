@@ -5,3 +5,4 @@ data/
 .env.local
 *.log
 기획서.md
+.claude
