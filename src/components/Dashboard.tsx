@@ -317,7 +317,7 @@ export default function Dashboard() {
                           연결하기
                         </button>
                       ) : (
-                        <button className="server-menu-item" onClick={() => void setConnection(s.id, false)}>
+                        <button className="server-menu-item danger" onClick={() => void setConnection(s.id, false)}>
                           연결 끊기
                         </button>
                       )}

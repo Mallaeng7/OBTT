@@ -257,6 +257,15 @@ input {
   background: var(--bg-2);
 }
 
+.server-menu-item.danger {
+  color: var(--err);
+}
+
+.server-menu-item.danger:hover {
+  background: var(--err);
+  color: #fff;
+}
+
 .server-item:hover {
   background: var(--bg-3);
 }
